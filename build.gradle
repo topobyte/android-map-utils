@@ -1,10 +1,10 @@
 wrapper {
-    gradleVersion = '5.2.1'
+    gradleVersion = '7.6.1'
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'eclipse'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 
 if (project.hasProperty("topobyte")) {
     apply from: 'file:///' + System.getProperty("user.home") \
@@ -16,10 +16,10 @@ version = pVersion
 
 repositories {
     maven {
-        url 'http://mvn.topobyte.de'
+        url 'https://mvn.topobyte.de'
     }
     maven {
-        url 'http://mvn.slimjars.com'
+        url 'https://mvn.slimjars.com'
     }
     mavenCentral()
 }
@@ -28,19 +28,29 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile 'com.google.android:android:4.1.1.4'
-    compile 'de.topobyte:android-misc-utils:0.0.1'
-    compile 'de.topobyte:android-map-event-manager:0.0.1'
-    compile 'de.topobyte:android-map-tile-manager:0.1.0'
-    compile 'de.topobyte:jsi:1.2.0'
-    compile 'de.topobyte:general-map-utils:0.0.3'
+    api 'com.google.android:android:4.1.1.4'
+    api 'de.topobyte:android-misc-utils:0.0.1'
+    api 'de.topobyte:android-map-event-manager:0.0.1'
+    api 'de.topobyte:android-map-tile-manager:0.1.0'
+    api 'de.topobyte:jsi:1.2.0'
+    api 'de.topobyte:general-map-utils:0.0.3'
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+java {
+    withSourcesJar()
 }
 
-artifacts {
-    archives sourcesJar
+def pomInfo = new XmlSlurper().parse(file('info.pom'));
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            pom {
+                name = "$pomInfo.name"
+                description = "$pomInfo.description"
+                url = "$pomInfo.url"
+            }
+        }
+    }
 }
